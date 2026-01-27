@@ -27,5 +27,6 @@ server:
         readOnlyRootFilesystem: true
         runAsNonRoot: true
         runAsUser: 65532
+
 injector:
   enabled: false

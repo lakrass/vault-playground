@@ -21,6 +21,18 @@ resource "vault_jwt_auth_backend_role" "default" {
   role_name      = "default"
   token_policies = ["default"]
 
-  user_claim            = "sub"
+  bound_audiences = [keycloak_openid_client.openbao.client_id]
+  bound_claims = {
+    email_verified = "true"
+  }
+
+  user_claim   = "sub"
+  groups_claim = keycloak_openid_client_scope.groups.name
+
+  claim_mappings = {
+    email = "email"
+  }
+
   allowed_redirect_uris = keycloak_openid_client.openbao.valid_redirect_uris
+  verbose_oidc_logging  = true
 }
