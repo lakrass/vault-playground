@@ -2,7 +2,7 @@ terraform {
   required_providers {
     vault = {
       source  = "hashicorp/vault"
-      version = ">= 5.6.0"
+      version = "5.6.0"
     }
     keycloak = {
       source  = "keycloak/keycloak"
@@ -10,7 +10,15 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = ">= 3.0.1"
+      version = "3.0.1"
+    }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "4.1.0"
+    }
+    local = {
+      source  = "hashicorp/local"
+      version = "2.6.1"
     }
   }
 }
@@ -31,4 +39,11 @@ provider "keycloak" {
 
 provider "kubernetes" {
   config_path = "~/.kube/config"
+}
+
+provider "tls" {
+}
+
+provider "local" {
+
 }
