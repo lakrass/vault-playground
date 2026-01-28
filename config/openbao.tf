@@ -101,10 +101,10 @@ resource "vault_ssh_secret_backend_role" "default" {
   allow_user_certificates = true
 
   default_user_template = true
-  default_user          = "alice" #"{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
+  default_user          = "{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
 
   allowed_users_template = true
-  allowed_users          = "alice" #"{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
+  allowed_users          = "{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
 
   allowed_extensions = "permit-pty,permit-user-rc"
   default_extensions = {

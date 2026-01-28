@@ -110,11 +110,11 @@ resource "tls_private_key" "alice" {
 }
 
 resource "local_sensitive_file" "alice_rsa" {
-  content  = tls_private_key.alice.private_key_pem
+  content  = tls_private_key.alice.private_key_openssh
   filename = "${path.module}/../alice_rsa"
 }
 
 resource "local_sensitive_file" "alice_rsa_pub" {
-  content  = tls_private_key.alice.public_key_pem
+  content  = tls_private_key.alice.public_key_openssh
   filename = "${path.module}/../alice_rsa.pub"
 }
