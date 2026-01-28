@@ -44,17 +44,24 @@ resource "vault_mount" "db" {
 }
 
 resource "vault_database_secret_backend_role" "pg_user" {
-  backend             = vault_mount.db.path
-  name                = "pg-user"
-  db_name             = "postgres"
-  creation_statements = ["CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"] # TODO: add grants
+  backend = vault_mount.db.path
+  name    = "pg-user"
+  db_name = "postgres"
+  creation_statements = [
+    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+    "GRANT pg_read_all_data TO \"{{name}}\";",
+    "GRANT pg_write_all_data TO \"{{name}}\";"
+  ]
 }
 
 resource "vault_database_secret_backend_role" "pg_admin" {
-  backend             = vault_mount.db.path
-  name                = "pg-admin"
-  db_name             = "postgres"
-  creation_statements = ["CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"] # TODO: add grants
+  backend = vault_mount.db.path
+  name    = "pg-admin"
+  db_name = "postgres"
+  creation_statements = [
+    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+    "GRANT ALL ON SCHEMA public TO \"{{name}}\";"
+  ]
 }
 
 resource "vault_database_secret_backend_connection" "pg" {
@@ -69,7 +76,7 @@ resource "vault_database_secret_backend_connection" "pg" {
 
   verify_connection = true
   allowed_roles = [
-    vault_database_secret_backend_role.pg_admin.name,
+    vault_database_secret_backend_role.pg_user.name,
     vault_database_secret_backend_role.pg_admin.name
   ]
 }
