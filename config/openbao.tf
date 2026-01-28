@@ -1,3 +1,4 @@
+# oidc auth
 resource "vault_jwt_auth_backend" "oidc" {
   depends_on = [keycloak_openid_client.openbao]
   type       = "oidc"
@@ -22,17 +23,85 @@ resource "vault_jwt_auth_backend_role" "default" {
   token_policies = ["default"]
 
   bound_audiences = [keycloak_openid_client.openbao.client_id]
-  bound_claims = {
-    email_verified = "true"
-  }
 
   user_claim   = "sub"
   groups_claim = keycloak_openid_client_scope.groups.name
 
   claim_mappings = {
-    email = "email"
+    email              = "email"
+    preferred_username = "ssh-user"
   }
 
   allowed_redirect_uris = keycloak_openid_client.openbao.valid_redirect_uris
   verbose_oidc_logging  = true
+}
+
+
+# db secrets engine
+resource "vault_mount" "db" {
+  type = "database"
+  path = "database"
+}
+
+resource "vault_database_secret_backend_role" "pg_user" {
+  backend             = vault_mount.db.path
+  name                = "pg-user"
+  db_name             = "postgres"
+  creation_statements = ["CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"] # TODO: add grants
+}
+
+resource "vault_database_secret_backend_role" "pg_admin" {
+  backend             = vault_mount.db.path
+  name                = "pg-admin"
+  db_name             = "postgres"
+  creation_statements = ["CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';"] # TODO: add grants
+}
+
+resource "vault_database_secret_backend_connection" "pg" {
+  backend = vault_mount.db.path
+  name    = "postgres"
+
+  postgresql {
+    username       = "postgres"
+    password       = "postgres"
+    connection_url = "postgres://{{username}}:{{password}}@postgres.postgres.svc.cluster.local:5432/postgres"
+  }
+
+  verify_connection = true
+  allowed_roles = [
+    vault_database_secret_backend_role.pg_admin.name,
+    vault_database_secret_backend_role.pg_admin.name
+  ]
+}
+
+
+# ssh secrets engine
+resource "vault_mount" "ssh" {
+  path = "ssh"
+  type = "ssh"
+}
+
+resource "vault_ssh_secret_backend_ca" "ssh" {
+  backend              = vault_mount.ssh.path
+  generate_signing_key = true
+}
+
+resource "vault_ssh_secret_backend_role" "default" {
+  backend = vault_mount.ssh.path
+  name    = "default"
+
+  key_type                = "ca"
+  allow_user_certificates = true
+
+  default_user_template = true
+  default_user          = "alice" #"{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
+
+  allowed_users_template = true
+  allowed_users          = "alice" #"{{ identity.entity.aliases.${vault_jwt_auth_backend.oidc.accessor}.metadata.ssh-user }}"
+
+  allowed_extensions = "permit-pty,permit-user-rc"
+  default_extensions = {
+    "permit-pty"     = ""
+    "permit-user-rc" = ""
+  }
 }
