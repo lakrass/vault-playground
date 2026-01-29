@@ -153,13 +153,50 @@ resource "vault_policy" "ssh_user" {
 }
 
 
+# kv secrets engine
+resource "vault_mount" "static" {
+  path = "static"
+  type = "kv"
+}
+
+resource "vault_kv_secret" "db_creds" {
+  path = "${vault_mount.static.path}/db-creds"
+  data_json = jsonencode(
+    {
+      user     = "postgres"
+      password = "postgres"
+    }
+  )
+}
+
+resource "vault_kv_secret" "ssh_creds" {
+  path = "${vault_mount.static.path}/ssh-creds"
+  data_json = jsonencode(
+    {
+      user     = "${keycloak_user.alice.username}"
+      password = "${keycloak_user.alice.initial_password[0].value}"
+    }
+  )
+}
+
+resource "vault_policy" "static_secrets" {
+  name   = "static-secrets"
+  policy = <<-EOT
+    path "${vault_mount.static.path}/*" {
+      capabilities = ["read", "list"]
+    }
+  EOT
+}
+
+
 # external groups with alias
 resource "vault_identity_group" "team_a" {
   name = keycloak_group.team_a.name
   type = "external"
   policies = [
     vault_policy.pg_admin.name,
-    vault_policy.ssh_user.name
+    vault_policy.ssh_user.name,
+    vault_policy.static_secrets.name
   ]
 }
 
@@ -173,7 +210,8 @@ resource "vault_identity_group" "team_b" {
   name = keycloak_group.team_b.name
   type = "external"
   policies = [
-    vault_policy.pg_user.name
+    vault_policy.pg_user.name,
+    vault_policy.static_secrets.name
   ]
 }
 
