@@ -91,7 +91,7 @@ resource "vault_policy" "pg_admin" {
 }
 
 resource "vault_policy" "pg_user" {
-  name   = "pg-admin"
+  name   = "pg-user"
   policy = <<-EOT
     path "${vault_mount.db.path}/creds/${vault_database_secret_backend_role.pg_user.name}" {
       capabilities = ["read"]
