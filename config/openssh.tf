@@ -53,6 +53,16 @@ resource "kubernetes_deployment_v1" "openssh" {
             value = keycloak_user.alice.username
           }
 
+          env {
+            name  = "PASSWORD_ACCESS"
+            value = true
+          }
+
+          env {
+            name  = "USER_PASSWORD"
+            value = keycloak_user.alice.initial_password[0].value
+          }
+
           volume_mount {
             name       = "config"
             mount_path = "/config/sshd/sshd_config.d/sshd_certs.conf"
