@@ -69,9 +69,10 @@ resource "keycloak_user_groups" "bob" {
 
 # scope "groups" with Keycloak groups as content
 resource "keycloak_openid_client_scope" "groups" {
-  realm_id    = keycloak_realm.demo.id
-  name        = "groups"
-  description = "List of assigned Keycloak groups"
+  realm_id               = keycloak_realm.demo.id
+  name                   = "groups"
+  description            = "List of assigned Keycloak groups"
+  include_in_token_scope = true
 }
 
 resource "keycloak_openid_group_membership_protocol_mapper" "groups_mapper" {
@@ -81,7 +82,7 @@ resource "keycloak_openid_group_membership_protocol_mapper" "groups_mapper" {
   name       = "groups"
   claim_name = "groups"
 
-  full_path           = true
+  full_path           = false
   add_to_access_token = true
   add_to_id_token     = false
 }
@@ -110,6 +111,16 @@ resource "keycloak_openid_client" "openbao" {
     "http://127.0.0.1:8200"
   ]
   admin_url = "http://localhost:8200/ui/vault/auth/oidc/oidc/callback"
+}
+
+resource "keycloak_realm_default_client_scopes" "default_scopes" {
+  realm_id = keycloak_realm.demo.id
+
+  default_scopes = [
+    keycloak_openid_client_scope.groups.name,
+    "email",
+    "profile"
+  ]
 }
 
 resource "keycloak_openid_client_default_scopes" "openbao_scope_default" {
