@@ -97,7 +97,7 @@ resource "vault_policy" "pg_admin" {
 resource "vault_policy" "pg_user" {
   name   = "pg-user"
   policy = <<-EOT
-    path "database/roles/${vault_database_secret_backend_role.pg_user.name}" { 
+    path "${vault_mount.db.path}/roles/${vault_database_secret_backend_role.pg_user.name}" { 
       capabilities = ["list"]
     }
 
@@ -142,7 +142,7 @@ resource "vault_ssh_secret_backend_role" "default" {
 resource "vault_policy" "ssh_user" {
   name   = "ssh-user"
   policy = <<-EOT
-    path "ssh/roles" { 
+    path "${vault_mount.ssh.path}/roles" { 
       capabilities = ["list"]
     }
 
