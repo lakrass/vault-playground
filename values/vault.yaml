@@ -1,6 +1,9 @@
 server:
   logLevel: debug
 
+  dataStorage:
+    size: 200Mi
+
   standalone:
     enabled: true
     config: |

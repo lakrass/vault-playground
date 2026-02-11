@@ -9,3 +9,6 @@ config:
 extraEnvs:
   - name: OPENSEARCH_INITIAL_ADMIN_PASSWORD
     value: OpenSearch123#
+
+persistence:
+  size: 200Mi

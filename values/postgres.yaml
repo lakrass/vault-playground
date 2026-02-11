@@ -17,7 +17,7 @@ service:
   nodePort: 30432
 
 storage:
-  requestedSize: 1Gi
+  requestedSize: 200Mi
 
 args:
   - -c
