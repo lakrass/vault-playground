@@ -5,8 +5,8 @@ repositories:
     url: https://helm.releases.hashicorp.com
   - name: opensearch
     url: https://opensearch-project.github.io/helm-charts
-  - name: groundhog2k
-    url: https://groundhog2k.github.io/helm-charts/
+  - name: cloudnative-pg
+    url: https://cloudnative-pg.github.io/charts
 
 releases:
   - name: ingress-nginx
@@ -21,12 +21,18 @@ releases:
     version: 0.32.0
     values:
       - ./values/vault.yaml
+  - name: cloudnative-pg
+    namespace: postgres
+    chart: cloudnative-pg/cloudnative-pg
+    version: 0.27.1
   - name: postgres
     namespace: postgres
-    chart: groundhog2k/postgres
-    version: 1.6.1
+    chart: cloudnative-pg/cluster
+    version: 0.5.0
     values:
       - ./values/postgres.yaml
+    needs:
+      - postgres/cloudnative-pg
   - name: keycloak
     namespace: keycloak
     chart: oci://registry-1.docker.io/cloudpirates/keycloak
@@ -45,3 +51,5 @@ releases:
     version: 3.4.0
     values:
       - ./values/opensearch-dashboards.yaml
+    needs:
+      - opensearch/opensearch

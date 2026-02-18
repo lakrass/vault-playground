@@ -67,14 +67,23 @@ resource "vault_database_secret_backend_role" "pg_admin" {
   ]
 }
 
+data "kubernetes_secret_v1" "pg_superuser" {
+  metadata {
+    namespace = "postgres"
+    name = "postgres-cluster-superuser" 
+  }
+}
+
 resource "vault_database_secret_backend_connection" "pg" {
+  depends_on = [ data.kubernetes_secret_v1.pg_superuser ]
+
   backend = vault_mount.db.path
   name    = "postgres"
 
   postgresql {
-    username       = "postgres"
-    password       = "postgres"
-    connection_url = "postgres://{{username}}:{{password}}@postgres.postgres.svc.cluster.local:5432/postgres"
+    username       = data.kubernetes_secret_v1.pg_superuser.data.username
+    password       = data.kubernetes_secret_v1.pg_superuser.data.password
+    connection_url = "postgres://{{username}}:{{password}}@${data.kubernetes_secret_v1.pg_superuser.data.host}.postgres.svc.cluster.local:${data.kubernetes_secret_v1.pg_superuser.data.port}/postgres"
   }
 
   verify_connection = true

@@ -1,31 +1,27 @@
-settings:
-  superuser:
-    value: postgres
-  superuserPassword:
-    value: postgres
+cluster:
+  instances: 1
+  storage:
+    size: 200Mi
 
-userDatabase:
-  name:
-    value: keycloak
-  user:
-    value: keycloak
-  password:
-    value: keycloak
+  services:
+    disabledDefaultServices: ["ro", "r"]
+    additional:
+      - selectorType: rw
+        serviceTemplate:
+          metadata:
+            name: postgres-cluster-nodeport
+          spec:
+            type: NodePort
+            ports:
+              - name: postgres
+                port: 5432
+                targetPort: 5432
+                nodePort: 30432
 
-service:
-  type: NodePort
-  nodePort: 30432
-
-storage:
-  requestedSize: 200Mi
-
-args:
-  - -c
-  - config_file=/etc/postgresql/postgresql.conf
-
-customConfig: |
-  listen_addresses = '*'
-  logging_collector = on
-  log_destination = 'jsonlog'
-  log_statement = 'all'
-  log_directory = '/tmp/'
+  postgresql:
+    parameters:
+      pgaudit.log: all, -misc
+      pgaudit.log_catalog: "off"
+      pgaudit.log_parameter: "on"
+      pgaudit.log_relation: "on"
+      pgaudit.log_rows: "on"

@@ -1,15 +1,7 @@
-postgres:
-  enabled: false
-
 keycloak:
   httpsEnabled: false
   adminUser: admin
   adminPassword: admin
-
-database:
-  host: postgres.postgres.svc.cluster.local
-  username: keycloak
-  password: keycloak
 
 ingress:
   enabled: true
@@ -19,3 +11,7 @@ ingress:
       paths:
         - path: /
           pathType: Prefix
+
+persistence:
+  enabled: true
+  size: 200Mi

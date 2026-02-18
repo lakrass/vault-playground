@@ -32,7 +32,7 @@ When using `direnv` in addition, it will detect the provided `.envrc` file in th
 
 2. Run `helmfile init` to ensure all required helm plugins are available and the tool is ready to use.
 
-3. Run `helmfile apply` inside this directory to install all required dependencies for the environment inside the cluster. Make sure the right cluster context is set.
+3. Run `helmfile apply --skip-diff-on-install` inside this directory to install all required dependencies for the environment inside the cluster. Make sure the right cluster context is set.
 
 4. Wait for all containers to become ready, except the Vault container. Check by `watch kubectl get pods -A`.
 
