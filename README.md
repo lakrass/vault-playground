@@ -1,4 +1,4 @@
-# Static vs. Dynamic Secrets Demo
+# Vault Playground
 
 ## Prerequisites
 
