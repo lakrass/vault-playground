@@ -135,6 +135,25 @@ fileConfigs:
         </regexp>
       </filter>
 
+      <filter keycloak.raw>
+        @type record_transformer
+        enable_ruby true
+        <record>
+          json_line ${'{' + record['message'].gsub(/(\w+)=/, '"\1":').gsub(/, /, ', ') + '}'}
+        </record>
+        remove_keys message
+      </filter>
+
+      <filter keycloak.raw>
+        @type parser
+        key_name json_line
+        reserve_data true
+        remove_key_name_field true
+        <parse>
+          @type json
+        </parse>
+      </filter>
+
       <filter postgres.raw>
         @type record_transformer
         enable_ruby true
