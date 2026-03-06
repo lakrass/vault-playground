@@ -46,27 +46,6 @@ resource "vault_mount" "db" {
   max_lease_ttl_seconds     = 900
 }
 
-resource "vault_database_secret_backend_role" "pg_user" {
-  backend = vault_mount.db.path
-  name    = "pg-user"
-  db_name = "postgres"
-  creation_statements = [
-    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
-    "GRANT pg_read_all_data TO \"{{name}}\";",
-    "GRANT pg_write_all_data TO \"{{name}}\";"
-  ]
-}
-
-resource "vault_database_secret_backend_role" "pg_admin" {
-  backend = vault_mount.db.path
-  name    = "pg-admin"
-  db_name = "postgres"
-  creation_statements = [
-    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
-    "GRANT ALL ON SCHEMA public TO \"{{name}}\";"
-  ]
-}
-
 data "kubernetes_secret_v1" "pg_superuser" {
   metadata {
     namespace = "postgres"
@@ -91,6 +70,42 @@ resource "vault_database_secret_backend_connection" "pg" {
   allowed_roles = [
     vault_database_secret_backend_role.pg_user.name,
     vault_database_secret_backend_role.pg_admin.name
+  ]
+}
+
+resource "vault_database_secret_backend_role" "pg_user" {
+  backend = vault_mount.db.path
+  name    = "pg-user"
+  db_name = "postgres"
+  creation_statements = [
+    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+    "GRANT pg_read_all_data TO \"{{name}}\";",
+    "GRANT pg_write_all_data TO \"{{name}}\";"
+  ]
+  revocation_statements = [
+    "REASSIGN OWNED BY \"{{name}}\" TO \"${data.kubernetes_secret_v1.pg_superuser.data.username}\";",
+    "DROP OWNED BY \"{{name}}\";",
+    "REVOKE pg_read_all_data FROM \"{{name}}\";",
+    "REVOKE pg_write_all_data FROM \"{{name}}\";",
+    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename = '{{name}}';",
+    "DROP ROLE \"{{name}}\";"
+  ]
+}
+
+resource "vault_database_secret_backend_role" "pg_admin" {
+  backend = vault_mount.db.path
+  name    = "pg-admin"
+  db_name = "postgres"
+  creation_statements = [
+    "CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';",
+    "GRANT ALL ON SCHEMA public TO \"{{name}}\";"
+  ]
+  revocation_statements = [
+    "REASSIGN OWNED BY \"{{name}}\" TO \"${data.kubernetes_secret_v1.pg_superuser.data.username}\";",
+    "DROP OWNED BY \"{{name}}\";",
+    "REVOKE ALL ON SCHEMA public FROM \"{{name}}\";",
+    "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE usename = '{{name}}';",
+    "DROP ROLE \"{{name}}\";"
   ]
 }
 
