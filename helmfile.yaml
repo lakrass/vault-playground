@@ -23,7 +23,7 @@ releases:
   - name: postgres
     namespace: postgres
     chart: cloudnative-pg/cluster
-    version: 0.5.0
+    version: 0.6.0
     values:
       - ./values/postgres.yaml
     needs:
@@ -31,19 +31,19 @@ releases:
   - name: keycloak
     namespace: keycloak
     chart: oci://registry-1.docker.io/cloudpirates/keycloak
-    version: 0.16.2
+    version: 0.16.9
     values:
       - ./values/keycloak.yaml
   - name: opensearch
     namespace: opensearch
     chart: opensearch/opensearch
-    version: 3.4.0
+    version: 3.5.0
     values:
       - ./values/opensearch.yaml
   - name: opensearch-dashboards
     namespace: opensearch
     chart: opensearch/opensearch-dashboards
-    version: 3.4.0
+    version: 3.5.0
     values:
       - ./values/opensearch-dashboards.yaml
     needs:
